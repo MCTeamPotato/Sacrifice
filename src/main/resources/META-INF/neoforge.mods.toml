@@ -1,0 +1,24 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+#issueTrackerURL = ""
+license = "MIT"
+
+[[mods]]
+modId = "sacrifice"
+version = "${version}"
+displayName = "Sacrifice"
+authors = "Kall"
+description = '''
+A Minecraft mod
+'''
+#logoFile = ""
+
+[[dependencies.sacrifice]]
+modId="duplicationless"
+mandatory=true
+versionRange="[1.0.5,)"
+ordering="NONE"
+side="BOTH"
+
+[[mixins]]
+config = "sacrifice.mixins.json"
