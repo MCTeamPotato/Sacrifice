@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.UUID;
+
 @Mixin(ItemEntity.class)
 public class ItemEntityMixin implements SacrificeItem {
     @Unique
@@ -34,15 +36,17 @@ public class ItemEntityMixin implements SacrificeItem {
     @Inject(method = "tick", at = @At("RETURN"))
     private void tickPickable(CallbackInfo ci) {
         ItemEntity entity = (ItemEntity) (Object) this;
-        Level level = entity.level();
+        Level level = entity.level;
         if (!(level instanceof ServerLevel)) return;
 
         if (!this.sacrifice$pickable()) this.sacrifice$setPickableTick(this.sacrifice$pickableTick() - 1);
 
         if (this.sacrifice$get() && Sacrifice.isMoving(entity)) {
-            Entity owner = entity.getOwner();
-            if (owner instanceof LivingEntity) {
-                DamageSource damageSource = level.damageSources().mobProjectile(entity, (LivingEntity) owner);
+            UUID owner = entity.getOwner();
+            if (owner == null) return;
+            Entity source = ((ServerLevel)level).getEntity(owner);
+            if (source instanceof LivingEntity) {
+                DamageSource damageSource = DamageSource.indirectMobAttack(entity, (LivingEntity) source);
                 for (Entity target : level.getEntities(entity, entity.getBoundingBox(), Entity::isAlive)) {
                     target.hurt(damageSource, Sacrifice.DAMAGE);
                 }
