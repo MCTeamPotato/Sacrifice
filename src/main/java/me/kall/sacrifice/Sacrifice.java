@@ -41,7 +41,7 @@ public final class Sacrifice {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void reachDeath(LivingDamageEvent event) {
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = event.getEntityLiving();
         if (!(entity instanceof ServerPlayer)) return;
         if (entity.getHealth() > event.getAmount()) return;
 
@@ -89,7 +89,7 @@ public final class Sacrifice {
 
     @SubscribeEvent
     public static void attackPlayer(@NotNull LivingAttackEvent event) {
-        LivingEntity entity = event.getEntity();
+        LivingEntity entity = event.getEntityLiving();
         if (!(entity instanceof ServerPlayer)) return;
         if (((Unattackable)entity).sacrifice$isUnattackable()) event.setCanceled(true);
     }
