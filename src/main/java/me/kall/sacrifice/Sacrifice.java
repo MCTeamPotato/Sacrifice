@@ -67,6 +67,7 @@ public final class Sacrifice {
                 ItemEntity itemEntity = new ItemEntity(level, x, y, z, stack.copy());
                 itemEntity.lifespan = LIFESPAN;
                 itemEntity.setThrower(uuid);
+                itemEntity.setOwner(uuid);
                 itemEntity.setDeltaMovement(random.nextDouble() - 0.5, 0.3 + random.nextDouble() * 0.3, random.nextDouble() - 0.5);
 
                 SacrificeItem.cast(itemEntity).sacrifice$set(true);
