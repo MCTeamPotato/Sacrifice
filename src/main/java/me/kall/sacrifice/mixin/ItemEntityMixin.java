@@ -15,29 +15,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemEntity.class)
-public class ItemEntityMixin implements SacrificeItem {
-    @Unique
-    private int sacrifice$pickableTick;
+public abstract class ItemEntityMixin implements SacrificeItem {
     @Unique
     private boolean sacrifice$isSacrifice;
-
-    @Override
-    public void sacrifice$setPickableTick(int pickableTick) {
-        this.sacrifice$pickableTick = pickableTick;
-    }
-
-    @Override
-    public int sacrifice$pickableTick() {
-        return this.sacrifice$pickableTick;
-    }
 
     @Inject(method = "tick", at = @At("RETURN"))
     private void tickPickable(CallbackInfo ci) {
         ItemEntity entity = (ItemEntity) (Object) this;
         Level level = entity.level();
         if (!(level instanceof ServerLevel)) return;
-
-        if (!this.sacrifice$pickable()) this.sacrifice$setPickableTick(this.sacrifice$pickableTick() - 1);
 
         if (this.sacrifice$get() && Sacrifice.isMoving(entity)) {
             Entity owner = entity.getOwner();

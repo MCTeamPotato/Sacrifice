@@ -14,10 +14,8 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
@@ -67,9 +65,8 @@ public final class Sacrifice {
                 itemEntity.lifespan = LIFESPAN;
                 itemEntity.setThrower(entity);
                 itemEntity.setDeltaMovement(random.nextDouble() - 0.5, 0.3 + random.nextDouble() * 0.3, random.nextDouble() - 0.5);
-
+                itemEntity.setPickUpDelay(40);
                 SacrificeItem.cast(itemEntity).sacrifice$set(true);
-                SacrificeItem.cast(itemEntity).sacrifice$setPickableTick(60);
 
                 level.addFreshEntity(itemEntity);
                 inventory.setItem(i, ItemStack.EMPTY);
@@ -91,11 +88,5 @@ public final class Sacrifice {
         LivingEntity entity = event.getEntity();
         if (!(entity instanceof ServerPlayer)) return;
         if (((Unattackable)entity).sacrifice$isUnattackable()) event.setCanceled(true);
-    }
-
-    @SubscribeEvent
-    public static void itemPick(@NotNull ItemEntityPickupEvent.Pre event) {
-        if (((SacrificeItem)event.getItemEntity()).sacrifice$pickable()) return;
-        event.setCanPickup(TriState.FALSE);
     }
 }
