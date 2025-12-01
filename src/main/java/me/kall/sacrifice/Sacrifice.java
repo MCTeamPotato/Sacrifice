@@ -12,7 +12,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -69,9 +68,8 @@ public final class Sacrifice {
                 itemEntity.setThrower(uuid);
                 itemEntity.setOwner(uuid);
                 itemEntity.setDeltaMovement(random.nextDouble() - 0.5, 0.3 + random.nextDouble() * 0.3, random.nextDouble() - 0.5);
-
+                itemEntity.setPickUpDelay(40);
                 SacrificeItem.cast(itemEntity).sacrifice$set(true);
-                SacrificeItem.cast(itemEntity).sacrifice$setPickableTick(60);
 
                 level.addFreshEntity(itemEntity);
                 inventory.setItem(i, ItemStack.EMPTY);
@@ -93,11 +91,5 @@ public final class Sacrifice {
         LivingEntity entity = event.getEntityLiving();
         if (!(entity instanceof ServerPlayer)) return;
         if (((Unattackable)entity).sacrifice$isUnattackable()) event.setCanceled(true);
-    }
-
-    @SubscribeEvent
-    public static void itemPick(@NotNull EntityItemPickupEvent event) {
-        if (((SacrificeItem)event.getItem()).sacrifice$pickable()) return;
-        event.setCanceled(true);
     }
 }
