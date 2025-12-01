@@ -10,20 +10,21 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.living.LivingDamageEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Mod(Sacrifice.MOD_ID)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, modid = Sacrifice.MOD_ID)
+@EventBusSubscriber(modid = Sacrifice.MOD_ID)
 public final class Sacrifice {
     public static final String MOD_ID = "sacrifice";
 
@@ -40,10 +41,10 @@ public final class Sacrifice {
     public static final float PERCENT = CONFIG.getFloat("SacrificableInventoryItemsPercent");
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void reachDeath(LivingDamageEvent event) {
+    public static void reachDeath(LivingDamageEvent.Pre event) {
         LivingEntity entity = event.getEntity();
         if (!(entity instanceof ServerPlayer)) return;
-        if (entity.getHealth() > event.getAmount()) return;
+        if (entity.getHealth() > event.getNewDamage()) return;
 
         Inventory inventory = ((ServerPlayer) entity).getInventory();
         Level level = entity.level();
@@ -52,8 +53,6 @@ public final class Sacrifice {
         double x = entity.getX();
         double y = entity.getY();
         double z = entity.getZ();
-
-        UUID uuid = entity.getUUID();
 
         long filledSlots = inventory.items.stream().filter(stack -> !stack.isEmpty()).count() +
                 inventory.armor.stream().filter(stack -> !stack.isEmpty()).count() +
@@ -66,7 +65,7 @@ public final class Sacrifice {
                 if (stack.isEmpty()) continue;
                 ItemEntity itemEntity = new ItemEntity(level, x, y, z, stack.copy());
                 itemEntity.lifespan = LIFESPAN;
-                itemEntity.setThrower(uuid);
+                itemEntity.setThrower(entity);
                 itemEntity.setDeltaMovement(random.nextDouble() - 0.5, 0.3 + random.nextDouble() * 0.3, random.nextDouble() - 0.5);
 
                 SacrificeItem.cast(itemEntity).sacrifice$set(true);
@@ -78,7 +77,7 @@ public final class Sacrifice {
 
             ((Unattackable)entity).sacrifice$setUnattackableTickCount(INVULNERABILITY);
 
-            event.setCanceled(true);
+            event.setNewDamage(0.0F);
         }
     }
 
@@ -88,15 +87,15 @@ public final class Sacrifice {
     }
 
     @SubscribeEvent
-    public static void attackPlayer(@NotNull LivingAttackEvent event) {
+    public static void attackPlayer(@NotNull LivingIncomingDamageEvent event) {
         LivingEntity entity = event.getEntity();
         if (!(entity instanceof ServerPlayer)) return;
         if (((Unattackable)entity).sacrifice$isUnattackable()) event.setCanceled(true);
     }
 
     @SubscribeEvent
-    public static void itemPick(@NotNull EntityItemPickupEvent event) {
-        if (((SacrificeItem)event.getItem()).sacrifice$pickable()) return;
-        event.setCanceled(true);
+    public static void itemPick(@NotNull ItemEntityPickupEvent.Pre event) {
+        if (((SacrificeItem)event.getItemEntity()).sacrifice$pickable()) return;
+        event.setCanPickup(TriState.FALSE);
     }
 }
