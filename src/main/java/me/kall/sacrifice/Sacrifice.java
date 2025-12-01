@@ -45,7 +45,7 @@ public final class Sacrifice {
         if (!(entity instanceof ServerPlayer)) return;
         if (entity.getHealth() > event.getAmount()) return;
 
-        Inventory inventory = ((ServerPlayer) entity).getInventory();
+        Inventory inventory = ((ServerPlayer) entity).inventory;
         Level level = entity.level;
         Random random = ThreadLocalRandom.current();
 
